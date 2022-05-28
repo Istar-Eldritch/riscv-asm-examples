@@ -81,21 +81,7 @@
 .globl _start
 
 _start:
-
-  // Set the clock to run at 14.4MHz 
-  la t0, PRCI_ADDR
-  lw t1, 0(t0)
-  li t2, 0b11111
-  not t2, t2
-  and t1, t2, t1
-  li t2, 0x4
-  or t1, t2, t1
-  sw t1, 0(t0)
-
-  // Trim clock calibration value
-  li t2, 0x23
-  sb t2, 2(t0)
-
+  call setup_clock
   call setup_uart
 
   # Transmit a byte
@@ -118,6 +104,22 @@ print_byte:
   sb a3, UART_TXDATA(t0)
   ret
   
+setup_clock:
+  // Set the clock to run at 14.4MHz 
+  la t0, PRCI_ADDR
+  lw t1, 0(t0)
+  li t2, 0b11111
+  not t2, t2
+  and t1, t2, t1
+  li t2, 0x4
+  or t1, t2, t1
+  sw t1, 0(t0)
+
+  // Trim clock calibration value
+  li t2, 0x23
+  sb t2, 2(t0)
+
+  ret
 
 setup_uart:
   # enable UART0 TX PIN
@@ -131,7 +133,7 @@ setup_uart:
   li t0, UART0_ADDR
   li t1, 0x00001
   sw t1, UART_TXCTRL(t0)
-  li t1, 124 # divider to achieve a 115200 rate
+  li t1, 124 # divider to achieve a 115200 rate on a 14.4MHz clock
   sw t1, UART_DIV(t0)
   ret
 
